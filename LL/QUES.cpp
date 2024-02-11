@@ -71,25 +71,54 @@ Node* reverse(Node* &head){
 void addONe(Node *&head)
 {
     //reverse list
-   Node* head =  reverse(head);
+   head =  reverse(head);
     //add one
      int carry = 1;
      Node* temp = head;
-     while (/* condition */)
+     while (temp->next!=NULL)
      {
-        /* code */
+        /* this handle upto 2nd last node. */
+        int totalSum = temp->data+carry;
+        int digit = totalSum%10;
+        carry = totalSum/10;
+
+        temp->data = digit;
+        temp = temp->next;
+        if(carry==0){
+            break;
+        }
+     }
+
+     // processing last node
+     if(carry!=0){
+         int totalSum = temp->data+carry;
+         int digit = totalSum%10;
+         carry = totalSum/10;
+
+
+         temp->data = digit;
+         if(carry!=0){
+            Node* newnode = new Node(carry);
+            temp->next = newnode;
+         }
      }
      
     //reverse
+    head = reverse(head);
 }
+
+
 int main()
 {
 
     Node *head = NULL;
     Node *tail = NULL;
-    insertatHead(head, tail, 8);
-    insertatHead(head, tail, 3);
-    insertatHead(head, tail, 1);
+    insertatHead(head, tail, 9);
+    // insertatHead(head, tail, 9);
+    // insertatHead(head, tail, 9);
+    printll(head);
+    addONe(head);
+    cout<<endl;
     printll(head);
     return 0;
 }
