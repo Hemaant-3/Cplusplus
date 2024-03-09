@@ -41,11 +41,12 @@ bool redundantBracket(string &str)
 
 // next smaller element
 
-vector<int> nextsmallerEele(int *arr, int size, vector<int> &ans) {
+
+vector<int> PrevsmallerEele(int *arr, int size, vector<int> &ans) {
     stack<int> st;
     st.push(-1);
 
-    for(int i = size-1; i>=0; i--){
+    for(int i = 0; i<size; i++){
         int curr = arr[i];
         // ans find karo curr k liye
         while (st.top()>= curr)
@@ -81,5 +82,15 @@ for(auto i:ans){
     cout<<i<<" ";
 }
 cout<<endl;
+cout<<endl;
+cout<<endl;
+
+    vector<int> prev(size);
+    prev = PrevsmallerEele(arr,size,prev);
+
+for(auto i:prev){
+    cout<<i<<" ";
+}
+
     return 0;
 }
