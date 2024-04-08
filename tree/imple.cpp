@@ -1,5 +1,6 @@
 #include<iostream>
 #include<queue>
+#include<map>
 using namespace std;
 class Node{
     public:
@@ -148,9 +149,17 @@ int searchpos(int inorder[],int element,int size){
 }
 
 
+void createMap(int inorder[],int size, map<int,int> &valueMap){
+    for (int i = 0; i < size; i++)
+    {
+        int value = inorder[i];
+        int index = i;
+        valueMap[value] = index;
+    }
+    
+}
 
-
-Node* ConstructTreeFromPerePost(int preOrder[],int inOrder[],int &preIndex, int inorderStart, int inorderEnd, int size){
+Node* ConstructTreeFromPerePost(map<int,int> &PosMap,int preOrder[],int inOrder[],int &preIndex, int inorderStart, int inorderEnd, int size){
     // base case
     if(preIndex>=size || inorderStart>inorderEnd){
         return NULL;
@@ -159,12 +168,33 @@ Node* ConstructTreeFromPerePost(int preOrder[],int inOrder[],int &preIndex, int 
     int element = preOrder[preIndex];
     preIndex++;
     Node* root = new Node(element);
-    int position = searchpos(inOrder,element,size);
+    // int position = searchpos(inOrder,element,size);
+    int position = PosMap[element];
 
-    root->left = ConstructTreeFromPerePost(preOrder,inOrder,preIndex,inorderStart,position-1,size);
+    root->left = ConstructTreeFromPerePost(PosMap,preOrder,inOrder,preIndex,inorderStart,position-1,size);
 
-    root->right = ConstructTreeFromPerePost(preOrder,inOrder,preIndex,position+1,inorderEnd,size);
+    root->right = ConstructTreeFromPerePost(PosMap,preOrder,inOrder,preIndex,position+1,inorderEnd,size);
 
+    return root;
+}
+
+Node* ConstructTreeFromInoPost(map<int,int> &PosMap,int postorder[],int inOrder[],int &postIndex, int inorderStart, int inorderEnd, int size){
+
+    if(postIndex< 0 || inorderStart>inorderEnd){
+        return NULL;
+    }
+    // 1 case solve
+        int element = postorder[postIndex];
+        postIndex--;
+        Node* root = new Node(element);
+        int position = PosMap[element];
+         
+
+
+    //backi recursion
+    // rigth ki call phle rhegi qki postorder = LRN == N->R->L
+    root->right = ConstructTreeFromInoPost(PosMap,postorder,inOrder,postIndex,position+1,inorderEnd,size);
+    root->left = ConstructTreeFromInoPost(PosMap,postorder,inOrder,postIndex,inorderStart,position-1,size);
     return root;
 }
 int main()
@@ -179,14 +209,29 @@ int main()
 // LevelOrder(root);
 // LevelOrderTre(root);
 
+
+/*
 int inorder[] = {10,8,6,2,4,12};
 int preorder[] = {2,8,10,6,4,12};
  int size = 6;
  int preOrderIndex = 0;
  int inorderStart = 0;
  int inorderEnd = 5;
+map<int,int> PosMap;
+createMap(inorder,size,PosMap);
+Node* root = ConstructTreeFromPerePost(PosMap,preorder,inorder,preOrderIndex,inorderStart,inorderEnd,size);
 
-Node* root = ConstructTreeFromPerePost(preorder,inorder,preOrderIndex,inorderStart,inorderEnd,size);
+LevelOrderTre(root);
+*/
+int inorder [] = {8,14,6,2,10,4};
+int postorder[] = {8,6,14,4,10,2};
+int size = 6;
+int postIndex = size-1;
+int inOrds = 0;
+int inOrde = size - 1;
+map<int,int> PosMap;
+createMap(inorder,size,PosMap);
+Node* root = ConstructTreeFromInoPost(PosMap,postorder,inorder,postIndex,inOrds,inOrde,size);
 
 LevelOrderTre(root);
 return 0;
