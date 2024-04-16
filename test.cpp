@@ -1,64 +1,243 @@
 #include <iostream>
-#include <queue>
-
+#include <vector>
 using namespace std;
 
-// Structure for a binary tree node
-struct TreeNode {
-    int data;
-    TreeNode* left;
-    TreeNode* right;
-    TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
-};
+class TrieNode
+{
+public:
+  char value;
+  TrieNode *children[26];
+  bool isTerminal;
 
-// Function to check if a binary tree is complete
-bool isCompleteBinaryTree(TreeNode* root) {
-    if (root == nullptr)
-        return true;
-
-    queue<TreeNode*> q;
-    q.push(root);
-    bool flag = false;
-
-    while (!q.empty()) {
-        TreeNode* current = q.front();
-        q.pop();
-
-        // If we have encountered a nullptr previously and the current node is not nullptr
-        // then it's not a complete binary tree
-        if (current == nullptr) {
-            flag = true;
-        } else {
-            // If a nullptr is encountered and flag is true, then it's not a complete binary tree
-            if (flag)
-                return false;
-
-            q.push(current->left);
-            q.push(current->right);
-        }
+  TrieNode(char val)
+  {
+    this->value = val;
+    for (int i = 0; i < 26; i++)
+    {
+      children[i] = NULL;
     }
-    return true;
+    this->isTerminal = false;
+  }
+};
+// insertion
+void insertWord(TrieNode *root, string word)
+{
+  // cout << "recieved word: " << word << " for insertion " << endl;
+  // base case
+  if (word.length() == 0)
+  {
+    root->isTerminal = true;
+    return;
+  }
+
+  char ch = word[0];
+  int index = ch - 'a';
+  TrieNode *child;
+  if (root->children[index] != NULL)
+  {
+    // present
+    child = root->children[index];
+  }
+  else
+  {
+    // absent
+    child = new TrieNode(ch);
+    root->children[index] = child;
+  }
+
+  // recursion
+  insertWord(child, word.substr(1));
 }
 
-// Function to create a new binary tree node
-TreeNode* newNode(int data) {
-    TreeNode* node = new TreeNode(data);
-    return node;
+bool searchWord(TrieNode *root, string word)
+{
+  // base case
+  if (word.length() == 0)
+  {
+    return root->isTerminal;
+  }
+
+  char ch = word[0];
+  int index = ch - 'a';
+  TrieNode *child;
+
+  if (root->children[index] != NULL)
+  {
+    // present or found
+    child = root->children[index];
+  }
+  else
+  {
+    // not found
+    return false;
+  }
+
+  /// baaaki recursion
+  bool recursionKaAns = searchWord(child, word.substr(1));
+  return recursionKaAns;
 }
 
-int main() {
-    // Creating a binary tree
-    TreeNode* root = newNode(1);
-    root->left = newNode(2);
-    root->right = newNode(3);
-    root->left->left = newNode(4);
-    root->left->right = newNode(5);
-    root->right->left = newNode(6);
+void deleteWord(TrieNode *root, string word)
+{
+  if (word.length() == 0)
+  {
+    root->isTerminal = false;
+    return;
+  }
 
-    if (isCompleteBinaryTree(root))
-        cout << "The binary tree is a complete binary tree." << endl;
+  // 1 case mera
+  char ch = word[0];
+  int index = ch - 'a';
+  TrieNode *child;
+
+  if (root->children[index] != NULL)
+  {
+    // present
+    child = root->children[index];
+  }
+  else
+  {
+    // not present
+    return;
+  }
+  // baaki recursion tera
+  deleteWord(child, word.substr(1));
+}
+
+void storeString(TrieNode *root, vector<string> &ans, string &input, string &prefix)
+{
+  // base case
+  if (root->isTerminal == true)
+  {
+    // ans store
+    ans.push_back(prefix + input);
+    // return ?
+  }
+
+  for (char ch = 'a'; ch <= 'z'; ch++)
+  {
+    int index = ch - 'a';
+    TrieNode *next = root->children[index];
+    if (next != NULL)
+    {
+      // child exist
+      input.push_back(ch);
+      // baaaki recursion
+      storeString(next, ans, input, prefix);
+      // backtrack
+      input.pop_back();
+    }
+  }
+}
+
+void findPrefixString(TrieNode *root, string input, vector<string> &ans, string &prefix)
+{
+  // base case
+  if (input.length() == 0)
+  {
+    TrieNode *lastchar = root;
+    storeString(lastchar, ans, input, prefix);
+    return;
+  }
+  char ch = input[0];
+  int index = ch - 'a';
+  TrieNode *child;
+  if (root->children[index] != NULL)
+  {
+    // child present
+    child = root->children[index];
+  }
+  else
+  {
+    return;
+  }
+  // recursive call
+  findPrefixString(child, input.substr(1), ans, prefix);
+}
+
+vector<vector<string>> getSuggestions(TrieNode *root, string input)
+{
+
+  vector<vector<string>> output;
+  TrieNode *prev = root;
+  string inputhelper = "";
+
+  for (int i = 0; i < input.length(); i++)
+  {
+    char lastchar = input[i];
+    int index = lastchar - 'a';
+    TrieNode *curr = prev->children[index];
+
+    if (curr == NULL)
+    {
+      break;
+    }
     else
-        cout << "The binary tree is not a complete binary tree." << endl;
+    {
+      vector<string> nicheKaAns;
+      inputhelper.push_back(lastchar);
+      string dummy = "";
+      storeString(curr, nicheKaAns, inputhelper, dummy);
+      output.push_back(nicheKaAns);
+      // important
+      prev = curr;
+    }
+  }
+  return output;
+}
 
-    return 0;
+int main()
+{
+  TrieNode *root = new TrieNode('-');
+
+  insertWord(root, "cater");
+  insertWord(root, "care");
+  insertWord(root, "com");
+  insertWord(root, "lover");
+  insertWord(root, "loved");
+  insertWord(root, "load");
+  insertWord(root, "lov");
+  insertWord(root, "bat");
+  insertWord(root, "cat");
+  insertWord(root, "car");
+
+  // vector<vector<string> > ans = getSuggestions(root, "loa");
+  // //printing ans
+  // for(int i=0; i<ans.size(); i++) {
+  //   cout << i << " -> ";
+  //   for(auto str: ans[i]) {
+  //     cout << str <<", ";
+  //   }cout << endl;
+  // }
+
+  string input = "ca";
+  string prefix = input;
+  vector<string> ans;
+
+  findPrefixString(root, input, ans, prefix);
+
+  for (auto i : ans)
+  {
+    cout << i << " ";
+  }
+  cout << endl;
+
+  // cout << "Insertion Done" << endl;
+  //  if(searchWord(root, "loved") ) {
+  //   cout << "Found" << endl;
+  //  }
+  //  else {
+  //   cout << "Not Found" << endl;
+  //  }
+
+  //  deleteWord(root, "loved");
+
+  //  if(searchWord(root, "loved") ) {
+  //   cout << "Found" << endl;
+  //  }
+  //  else {
+  //   cout << "Not Found" << endl;
+  //  }
+
+  return 0;
 }
