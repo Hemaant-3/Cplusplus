@@ -1,243 +1,75 @@
-#include <iostream>
-#include <vector>
+//{ Driver Code Starts
+#include <bits/stdc++.h>
 using namespace std;
 
-class TrieNode
-{
-public:
-  char value;
-  TrieNode *children[26];
-  bool isTerminal;
-
-  TrieNode(char val)
-  {
-    this->value = val;
-    for (int i = 0; i < 26; i++)
-    {
-      children[i] = NULL;
-    }
-    this->isTerminal = false;
+// } Driver Code Ends
+class Solution {
+  public:
+  bool checkcycle(int src, unordered_map<int, bool> &vis,
+  unordered_map<int,bool>& dfsTrack, vector<int> adj[]){
+      
+      vis[src] = true;
+      dfsTrack[src] = true;
+      
+      for(auto nbr: adj[src]){
+          if(!vis[src]){
+              bool ans = checkcycle(nbr,vis,dfsTrack,adj);
+              if(ans==true){
+                  return true;
+              }
+          }
+          if(vis[nbr]==1 && dfsTrack[nbr]==1){
+             //cycle present
+             return true;
+          }
+      }
+      
+      //backtrack yahi per mistake kroge
+      dfsTrack[src] = false;
+      return false;
   }
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(int V, vector<int> adj[]) {
+        // code here
+    
+        unordered_map<int, bool> vis;
+        unordered_map<int,bool>dfsTrack;
+        
+        for(int node = 0; node<V; node++){
+         if(!vis[node]){
+             bool isCyclic = checkcycle(node,vis,dfsTrack,adj);
+             if(isCyclic){
+                 return true;
+             }
+         }   
+        }
+        return false;
+    }
 };
-// insertion
-void insertWord(TrieNode *root, string word)
-{
-  // cout << "recieved word: " << word << " for insertion " << endl;
-  // base case
-  if (word.length() == 0)
-  {
-    root->isTerminal = true;
-    return;
-  }
 
-  char ch = word[0];
-  int index = ch - 'a';
-  TrieNode *child;
-  if (root->children[index] != NULL)
-  {
-    // present
-    child = root->children[index];
-  }
-  else
-  {
-    // absent
-    child = new TrieNode(ch);
-    root->children[index] = child;
-  }
+//{ Driver Code Starts.
 
-  // recursion
-  insertWord(child, word.substr(1));
-}
+int main() {
 
-bool searchWord(TrieNode *root, string word)
-{
-  // base case
-  if (word.length() == 0)
-  {
-    return root->isTerminal;
-  }
+    int t;
+    cin >> t;
+    while (t--) {
+        int V, E;
+        cin >> V >> E;
 
-  char ch = word[0];
-  int index = ch - 'a';
-  TrieNode *child;
+        vector<int> adj[V];
 
-  if (root->children[index] != NULL)
-  {
-    // present or found
-    child = root->children[index];
-  }
-  else
-  {
-    // not found
-    return false;
-  }
+        for (int i = 0; i < E; i++) {
+            int u, v;
+            cin >> u >> v;
+            adj[u].push_back(v);
+        }
 
-  /// baaaki recursion
-  bool recursionKaAns = searchWord(child, word.substr(1));
-  return recursionKaAns;
-}
-
-void deleteWord(TrieNode *root, string word)
-{
-  if (word.length() == 0)
-  {
-    root->isTerminal = false;
-    return;
-  }
-
-  // 1 case mera
-  char ch = word[0];
-  int index = ch - 'a';
-  TrieNode *child;
-
-  if (root->children[index] != NULL)
-  {
-    // present
-    child = root->children[index];
-  }
-  else
-  {
-    // not present
-    return;
-  }
-  // baaki recursion tera
-  deleteWord(child, word.substr(1));
-}
-
-void storeString(TrieNode *root, vector<string> &ans, string &input, string &prefix)
-{
-  // base case
-  if (root->isTerminal == true)
-  {
-    // ans store
-    ans.push_back(prefix + input);
-    // return ?
-  }
-
-  for (char ch = 'a'; ch <= 'z'; ch++)
-  {
-    int index = ch - 'a';
-    TrieNode *next = root->children[index];
-    if (next != NULL)
-    {
-      // child exist
-      input.push_back(ch);
-      // baaaki recursion
-      storeString(next, ans, input, prefix);
-      // backtrack
-      input.pop_back();
+        Solution obj;
+        cout << obj.isCyclic(V, adj) << "\n";
     }
-  }
+
+    return 0;
 }
 
-void findPrefixString(TrieNode *root, string input, vector<string> &ans, string &prefix)
-{
-  // base case
-  if (input.length() == 0)
-  {
-    TrieNode *lastchar = root;
-    storeString(lastchar, ans, input, prefix);
-    return;
-  }
-  char ch = input[0];
-  int index = ch - 'a';
-  TrieNode *child;
-  if (root->children[index] != NULL)
-  {
-    // child present
-    child = root->children[index];
-  }
-  else
-  {
-    return;
-  }
-  // recursive call
-  findPrefixString(child, input.substr(1), ans, prefix);
-}
-
-vector<vector<string>> getSuggestions(TrieNode *root, string input)
-{
-
-  vector<vector<string>> output;
-  TrieNode *prev = root;
-  string inputhelper = "";
-
-  for (int i = 0; i < input.length(); i++)
-  {
-    char lastchar = input[i];
-    int index = lastchar - 'a';
-    TrieNode *curr = prev->children[index];
-
-    if (curr == NULL)
-    {
-      break;
-    }
-    else
-    {
-      vector<string> nicheKaAns;
-      inputhelper.push_back(lastchar);
-      string dummy = "";
-      storeString(curr, nicheKaAns, inputhelper, dummy);
-      output.push_back(nicheKaAns);
-      // important
-      prev = curr;
-    }
-  }
-  return output;
-}
-
-int main()
-{
-  TrieNode *root = new TrieNode('-');
-
-  insertWord(root, "cater");
-  insertWord(root, "care");
-  insertWord(root, "com");
-  insertWord(root, "lover");
-  insertWord(root, "loved");
-  insertWord(root, "load");
-  insertWord(root, "lov");
-  insertWord(root, "bat");
-  insertWord(root, "cat");
-  insertWord(root, "car");
-
-  // vector<vector<string> > ans = getSuggestions(root, "loa");
-  // //printing ans
-  // for(int i=0; i<ans.size(); i++) {
-  //   cout << i << " -> ";
-  //   for(auto str: ans[i]) {
-  //     cout << str <<", ";
-  //   }cout << endl;
-  // }
-
-  string input = "ca";
-  string prefix = input;
-  vector<string> ans;
-
-  findPrefixString(root, input, ans, prefix);
-
-  for (auto i : ans)
-  {
-    cout << i << " ";
-  }
-  cout << endl;
-
-  // cout << "Insertion Done" << endl;
-  //  if(searchWord(root, "loved") ) {
-  //   cout << "Found" << endl;
-  //  }
-  //  else {
-  //   cout << "Not Found" << endl;
-  //  }
-
-  //  deleteWord(root, "loved");
-
-  //  if(searchWord(root, "loved") ) {
-  //   cout << "Found" << endl;
-  //  }
-  //  else {
-  //   cout << "Not Found" << endl;
-  //  }
-
-  return 0;
-}
+// } Driver Code Ends

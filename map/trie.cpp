@@ -178,6 +178,33 @@ void findprefix(trieNode *root, string input, vector<string> &ans, string &prefi
 }
 
 
+vector<vector<string>>getSuggestion(trieNode* root, string input){
+    vector<vector<string>> output;
+    trieNode* prev = root;
+    string inputhelper = "";
+    for (int i = 0; i < input.length(); i++)
+    {
+        char lastchar = input[i];
+        int index = lastchar-'a';
+        trieNode* curr = prev->children[index];
+
+        if(curr==NULL){
+            break;
+        } else{
+            vector<string> nichekaAns;
+            inputhelper.push_back(lastchar);
+            string dummy = "";
+            storeString(curr,nichekaAns,inputhelper,
+            dummy);
+            output.push_back(nichekaAns);
+
+            prev = curr; // no recursion it's loop
+        }
+    }
+    return output;
+
+}
+
 int main()
 {
     trieNode *root = new trieNode('-');
@@ -203,18 +230,31 @@ int main()
     //     cout<<"not found"<<endl;
     // }
 
-    string input = "ca";
-    string prefix = input;
-    vector<string> ans;
-    findprefix(root, input, ans, prefix);
+    // string input = "ca";
+    // string prefix = input;
+    // vector<string> ans;
+    //findprefix(root, input, ans, prefix);
     // cout<<"JHELLO";
 
-    for (auto i : ans)
-    {
-        cout << i << " ";
-    }
-    cout << endl;
 
+
+    // for (auto i : ans)
+    // {
+    //     cout << i << " ";
+    // }
+    // cout << endl;
+
+vector<vector<string>> ans = getSuggestion(root,"loa");
+
+// printing ans 
+for (int i = 0; i < ans.size(); i++)
+{
+     cout << i << " -> ";
+   for(auto str: ans[i]) {
+      cout << str <<", ";
+    }cout << endl;
+    
+}
 
     return 0;
 }
