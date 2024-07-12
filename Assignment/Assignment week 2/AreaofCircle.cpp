@@ -3,7 +3,7 @@ using namespace std;
 #include<math.h>
 
 void areaOfCircle(){
-cout<<"Enter the radius: ";
+cout<<" the radius: ";
 float radius;
 cin>>radius;
 
